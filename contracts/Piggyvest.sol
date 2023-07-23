@@ -2,51 +2,62 @@
 pragma solidity ^0.8.19;
 
 import {IERC20} from  "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Piggyvest {
-    address token;
+contract Piggyvest is Ownable{
+    IERC20 public token;
 
-    uint32 timeLock;
+    uint32 public timeLock;
 
-    mapping(address => uint32) UserTokenId;
+    mapping(address => uint32) UserTokens;
 
-    mapping(address => uint256) amount;
+    mapping(address => uint256) etherAmount;
 
     event TransferTokenIn(address user, uint32 tokenId);
 
-    event TransferetherIn(address user, uint32 amount);
-
-    modifier timeLock() {
-        require(block.timestamp)
-    }
+    event TransferEtherIn(address user, uint32 amount);
     
-    constructor(address _token, uint32 _timeLock){
+    constructor(IERC20 _token){
         token = _token;
-        timeLock = _timeLock;
+    }
+
+    modifier TimeLock() {
+        require(block.timestamp > timeLock, "lock not reached");
+        _;
     }
 
     ///@dev deposite ERC20 tokens into this contract
-    function depositeERC20Tokens(uint32 tokenId)  {
-        bool sent = IERC20(token).transferFrom(msg.sender, address(this), tokenId);
+    function depositeERC20Tokens(uint32 amountTokens) public {
+        bool sent = token.transferFrom(msg.sender, address(this), amountTokens);
         require(sent,'error while transfering token');
-        UserTokenId[msg.sender] = tokenId;
-        emit TransferTokenIn(msg.sender, tokenId);  
+        UserTokens[msg.sender] += amountTokens;
+        emit TransferTokenIn(msg.sender, amountTokens);  
     }
 
     ///@dev deposite Ether into the contract
     function depositeEther() payable public {
         require(msg.value > 0, "zero amount");
-        amount[msg.sender] =+ msg.value;
-        emit TransferetherIn(msg.sender, msg.value);
+        etherAmount[msg.sender] += msg.value;
+        emit TransferEtherIn(msg.sender, uint32(msg.value));
     }
 
     ///@dev timelock for a specific time 
-    function changeTimeLock() public{
-
+    function changeTimeLock(uint32 _newtime) public onlyOwner{
+        timeLock = _newtime;
     }
 
     ///@dev withdraw funds 
-    function withdraw () public {
-        
+    function withdrawToken () public TimeLock(){
+        uint32 tokens = UserTokens[msg.sender];
+        bool sent = token.transfer(address(this), tokens); 
+        require(sent, 'failed to send tokens out');
+        UserTokens[msg.sender] = 0;
+    }
+
+    function withdrawEther() public TimeLock(){
+        uint256 amount = etherAmount[msg.sender];
+        (bool sent,) = payable(msg.sender).call{value: amount}("");
+        require(sent, "failed to send ether Out");
+        etherAmount[msg.sender] = 0;
     }
 }
