@@ -1,27 +1,27 @@
-// import { ethers } from "hardhat";
+import { log } from "console";
+import { ethers } from "hardhat";
 
-// async function main() {
-//   const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-//   const unlockTime = currentTimestampInSeconds + 60;
+async function main() {
 
-//   const lockedAmount = ethers.parseEther("0.001");
+  const Testtoken = await ethers.deployContract("TestToken");
 
-//   const lock = await ethers.deployContract("Lock", [unlockTime], {
-//     value: lockedAmount,
-//   });
+  console.log('deploying')
 
-//   await lock.waitForDeployment();
+  await Testtoken.waitForDeployment();
 
-//   console.log(
-//     `Lock with ${ethers.formatEther(
-//       lockedAmount
-//     )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-//   );
-// }
+  console.log('deployed');
 
-// // We recommend this pattern to be able to use async/await everywhere
-// // and properly handle errors.
-// main().catch((error) => {
-//   console.error(error);
-//   process.exitCode = 1;
-// });
+  const Piggyvest = await ethers.deployContract("Piggyvest", [Testtoken.getAddress()]);
+
+  console.log('deploying')
+
+  const piggyvest =await Piggyvest.waitForDeployment();
+
+  console.log(piggyvest);
+
+// We recommend this pattern to be able to use async/await everywhere
+// and properly handle errors.
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+})};

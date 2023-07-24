@@ -1,8 +1,26 @@
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
+require("@nomicfoundation/hardhat-toolbox");
+import "@nomiclabs/hardhat-ethers";
+require("dotenv").config({ path: ".env" });
 
-const config: HardhatUserConfig = {
+
+
+const ALCHEMY_CELO_API_KEY_URL = process.env.ALCHEMY_CELO_API_KEY_URL;
+
+const ACCOUNT_PRIVATE_KEY = process.env.ACCOUNT_PRIVATE_KEY;
+
+ 
+
+module.exports = {
   solidity: "0.8.19",
+  networks: {
+    hardhat: {
+    
+    },
+    alfajores: {
+      url: process.env.ALCHEMY_CELO_API_KEY_URL,
+      accounts: [process.env.ACCOUNT_PRIVATE_KEY,],
+      chainId: 44787,
+   },
+    
+  }
 };
-
-export default config;
