@@ -72,7 +72,7 @@ describe("Piggyvest", function () {
 
   describe("Withdrawals", function () {
     describe("Events", function () {
-      it("Should emit an event on withdrawals", async function () {
+      it("Should emit an event on withdrawals Ether", async function () {
         const { piggyvest, owner, unlockTime } = await loadFixture(deployPiggyvest);
 
         await time.increaseTo(unlockTime);
@@ -80,6 +80,16 @@ describe("Piggyvest", function () {
         await expect(piggyvest.withdrawEther())
           .to.emit(piggyvest, "withdrawal")
           .withArgs(owner.address,0 ) // We accept any value as `when` arg
+      });
+
+      it("Should emit an event on withdrawals ERC20", async function () {
+        const { piggyvest, owner, unlockTime } = await loadFixture(deployPiggyvest);
+
+        await time.increaseTo(unlockTime);
+
+        await expect(piggyvest.withdrawToken())
+          .to.emit(piggyvest, "withdrawal")
+          .withArgs(owner.address,0 ) 
       });
     });
   });
