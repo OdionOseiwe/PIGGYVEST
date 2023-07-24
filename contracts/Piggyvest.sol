@@ -16,6 +16,8 @@ contract Piggyvest is Ownable{
     event TransferTokenIn(address user, uint32 tokenId);
 
     event TransferEtherIn(address user, uint32 amount);
+
+    event withdrawal(address user, uint32 amount);
     
     constructor(IERC20 _token){
         token = _token;
@@ -52,6 +54,7 @@ contract Piggyvest is Ownable{
         bool sent = token.transfer(address(this), tokens); 
         require(sent, 'failed to send tokens out');
         UserTokens[msg.sender] = 0;
+        emit withdrawal(msg.sender,tokens );
     }
 
     function withdrawEther() public TimeLock(){
@@ -59,5 +62,6 @@ contract Piggyvest is Ownable{
         (bool sent,) = payable(msg.sender).call{value: amount}("");
         require(sent, "failed to send ether Out");
         etherAmount[msg.sender] = 0;
+        emit withdrawal(msg.sender, uint32(amount));
     }
 }

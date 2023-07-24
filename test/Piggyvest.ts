@@ -53,20 +53,35 @@ describe("Piggyvest", function () {
        otherAccount.call(await piggyvest.depositeEther( {value: ethers.parseUnits("1.0", 18)}));
 
       });
+
+      it("Should transfer the ERC20 into the contract", async function () {
+        const { piggyvest,otherAccount, testToken  } = await loadFixture(deployPiggyvest);
+        await testToken.transfer(otherAccount, ethers.parseUnits("1.0", 18));
+
+        expect(await testToken.balanceOf(otherAccount.address)).to.be.equal(ethers.parseUnits("1.0", 18));
+        await testToken.approve(piggyvest.getAddress(),ethers.parseUnits("1.0", 18));
+        otherAccount.call( await testToken.approve(piggyvest.getAddress(),ethers.parseUnits("1.0", 18)));
+
+        await piggyvest.depositeERC20Tokens('1');
+        otherAccount.call(await piggyvest.depositeERC20Tokens('1'))
+
+        const bal =  await testToken.balanceOf(piggyvest.getAddress())
+        console.log(`it is the balance of the piggyvest ${bal}`)
+      });
     });
 
-  // describe("Withdrawals", function () {
-  //   describe("Events", function () {
-  //     it("Should emit an event on withdrawals", async function () {
-  //       const { piggyvest, owner, unlockTime } = await loadFixture(deployPiggyvest);
+  describe("Withdrawals", function () {
+    describe("Events", function () {
+      it("Should emit an event on withdrawals", async function () {
+        const { piggyvest, owner, unlockTime } = await loadFixture(deployPiggyvest);
 
-  //       await time.increaseTo(unlockTime);
+        await time.increaseTo(unlockTime);
 
-  //       await expect(lock.withdraw())
-  //         .to.emit(lock, "Withdrawal")
-  //         .withArgs(lockedAmount, anyValue); // We accept any value as `when` arg
-  //     });
-  //   });
-  // });
+        await expect(piggyvest.withdrawEther())
+          .to.emit(piggyvest, "withdrawal")
+          .withArgs(owner.address,0 ) // We accept any value as `when` arg
+      });
+    });
+  });
   
 });
