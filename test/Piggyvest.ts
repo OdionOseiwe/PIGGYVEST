@@ -36,7 +36,7 @@ describe("Piggyvest", function () {
       const { piggyvest, unlockTime, otherAccount } = await loadFixture(deployPiggyvest);
 
       await expect(otherAccount.call((await piggyvest.changeTimeLock(unlockTime))))
-      .to.be.revertedWith
+      .to.be.rejected
     });
 
     it("expect the timelock ro be set" , async function  () {

@@ -1,5 +1,6 @@
-require("@nomicfoundation/hardhat-toolbox");
-import "@nomiclabs/hardhat-ethers";
+import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-toolbox";
+
 require("dotenv").config({ path: ".env" });
 
 
@@ -19,8 +20,9 @@ module.exports = {
     alfajores: {
       url: process.env.ALCHEMY_CELO_API_KEY_URL,
       accounts: [process.env.ACCOUNT_PRIVATE_KEY,],
-      chainId: 44787,
    },
     
+  }, etherscan: {
+    apiKey: process.env.API_KEY
   }
 };
