@@ -48,7 +48,7 @@ contract Piggyvest is Ownable{
         timeLock = _newtime;
     }
 
-    ///@dev withdraw funds 
+    ///@dev withdraw tokens
     function withdrawToken () public TimeLock(){
         uint32 tokens = UserTokens[msg.sender];
         bool sent = token.transfer(address(this), tokens); 
@@ -57,6 +57,7 @@ contract Piggyvest is Ownable{
         emit withdrawal(msg.sender,tokens );
     }
 
+    ///@dev withdraw ether
     function withdrawEther() public TimeLock(){
         uint256 amount = etherAmount[msg.sender];
         (bool sent,) = payable(msg.sender).call{value: amount}("");
