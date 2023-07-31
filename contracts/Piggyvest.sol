@@ -20,6 +20,7 @@ contract Piggyvest is Ownable{
     event withdrawal(address user, uint32 amount);
     
     constructor(IERC20 _token){
+    require(address(_token) !=  address(0), "Invalid address");
         token = _token;
     }
 
@@ -45,24 +46,27 @@ contract Piggyvest is Ownable{
 
     ///@dev timelock for a specific time 
     function changeTimeLock(uint32 _newtime) public onlyOwner{
+        require(_newtime > block.timestamp, "invalid time");
         timeLock = _newtime;
     }
 
     ///@dev withdraw tokens
     function withdrawToken () public TimeLock(){
         uint32 tokens = UserTokens[msg.sender];
+        require(tokens > 0, "Did not deposit");
+        UserTokens[msg.sender] = 0;
         bool sent = token.transfer(address(this), tokens); 
         require(sent, 'failed to send tokens out');
-        UserTokens[msg.sender] = 0;
         emit withdrawal(msg.sender,tokens );
     }
 
     ///@dev withdraw ether
     function withdrawEther() public TimeLock(){
         uint256 amount = etherAmount[msg.sender];
+        require(amount > 0, "did not deposit");
+        etherAmount[msg.sender] = 0;
         (bool sent,) = payable(msg.sender).call{value: amount}("");
         require(sent, "failed to send ether Out");
-        etherAmount[msg.sender] = 0;
         emit withdrawal(msg.sender, uint32(amount));
     }
 }
