@@ -62,7 +62,10 @@ contract Piggyvest is Ownable{
         address  token_B;
         uint32 tokens = UserTokens[msg.sender];
         require(tokens > 0, "Did not deposit");
-        IUniswapV2Router02(router).swapExactTokensForTokens(tokens,(tokens - 1 ** 18),[token_A,token_B], msg.sender, (block.timestamp + 60));
+        address[] memory path = new address [](2);
+        path[0] = token_A;
+        path[1] = token_B;
+        IUniswapV2Router02(router).swapExactTokensForTokens(tokens,(tokens - 1 ** 18),path, msg.sender, (block.timestamp + 60));
         UserTokens[msg.sender] = 0;
         emit withdrawal(msg.sender,tokens );
     }
