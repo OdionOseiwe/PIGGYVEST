@@ -3,6 +3,9 @@ pragma solidity ^0.8.19;
 
 import {IERC20} from  "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IUniswapV2Factory} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
+import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+
 
 contract Piggyvest is Ownable{
     IERC20 public token;
