@@ -12,7 +12,7 @@ contract Piggyvest is Ownable{
 
     uint32 public timeLock;
 
-    address factory;
+    address public router;
 
     mapping(address => uint32) UserTokens;
 
@@ -24,10 +24,10 @@ contract Piggyvest is Ownable{
 
     event withdrawal(address user, uint32 amount);
     
-    constructor(IERC20 _token, address _tokenA, address _tokenB){
+    constructor(IERC20 _token, address _tokenA, address _tokenB, uint256 _tokenAamount, uint256 _tokenBamount){
         require(address(_token) !=  address(0), "Invalid address");
         token = _token;
-        IUniswapV2Factory(factory).createPair(_tokenA, _tokenB);
+        IUniswapV2Router02(router).addLiquidity(_tokenA,_tokenB,_tokenAamount,_tokenBamount, 0, 0, owner(), 10);
     }
 
     modifier TimeLock() {
@@ -58,11 +58,12 @@ contract Piggyvest is Ownable{
 
     ///@dev withdraw tokens
     function withdrawToken () public TimeLock(){
+        address  token_A; 
+        address  token_B;
         uint32 tokens = UserTokens[msg.sender];
         require(tokens > 0, "Did not deposit");
+        IUniswapV2Router02(router).swapExactTokensForTokens(tokens,(tokens - 1 ** 18),[token_A,token_B], msg.sender, (block.timestamp + 60));
         UserTokens[msg.sender] = 0;
-        bool sent = token.transfer(address(this), tokens); 
-        require(sent, 'failed to send tokens out');
         emit withdrawal(msg.sender,tokens );
     }
 
@@ -76,7 +77,5 @@ contract Piggyvest is Ownable{
         emit withdrawal(msg.sender, uint32(amount));
     }
 
-    // function createPairs(address _tokenA, address _tokenB) external onlyOwner() {
-    //     IUniswapV2Factory(factory).createPair(_tokenA, _tokenB)
-    // }
+
 }
