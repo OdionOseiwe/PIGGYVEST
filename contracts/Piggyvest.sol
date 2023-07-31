@@ -12,6 +12,8 @@ contract Piggyvest is Ownable{
 
     uint32 public timeLock;
 
+    address factory;
+
     mapping(address => uint32) UserTokens;
 
     mapping(address => uint256) etherAmount;
@@ -22,9 +24,10 @@ contract Piggyvest is Ownable{
 
     event withdrawal(address user, uint32 amount);
     
-    constructor(IERC20 _token){
-    require(address(_token) !=  address(0), "Invalid address");
+    constructor(IERC20 _token, address _tokenA, address _tokenB){
+        require(address(_token) !=  address(0), "Invalid address");
         token = _token;
+        IUniswapV2Factory(factory).createPair(_tokenA, _tokenB);
     }
 
     modifier TimeLock() {
@@ -72,4 +75,8 @@ contract Piggyvest is Ownable{
         require(sent, "failed to send ether Out");
         emit withdrawal(msg.sender, uint32(amount));
     }
+
+    // function createPairs(address _tokenA, address _tokenB) external onlyOwner() {
+    //     IUniswapV2Factory(factory).createPair(_tokenA, _tokenB)
+    // }
 }
