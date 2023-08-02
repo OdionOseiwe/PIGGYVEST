@@ -8,7 +8,8 @@ import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUn
 
 
 contract Piggyvest is Ownable{
-    IERC20 public token;
+    IERC20 public  token_A;
+    IERC20 public  token_B;
 
     uint32 public timeLock;
 
@@ -24,10 +25,12 @@ contract Piggyvest is Ownable{
 
     event withdrawal(address user, uint32 amount);
     
-    constructor(IERC20 _token, address _tokenA, address _tokenB, uint256 _tokenAamount, uint256 _tokenBamount){
-        require(address(_token) !=  address(0), "Invalid address");
-        token = _token;
-        IUniswapV2Router02(router).addLiquidity(_tokenA,_tokenB,_tokenAamount,_tokenBamount, 0, 0, owner(), 10);
+    constructor( IERC20 _tokenA, IERC20 _tokenB, uint256 _tokenAamount, uint256 _tokenBamount){
+        require(address(_tokenA) !=  address(0) , "Invalid address");
+        require( address(_tokenB) !=  address(0), "invalid address");
+        token_A = _tokenA;
+        token_B = _tokenB;
+        IUniswapV2Router02(router).addLiquidity(address(_tokenA),address(_tokenB),_tokenAamount,_tokenBamount, 0, 0, owner(), 10);
     }
 
     modifier TimeLock() {
@@ -37,7 +40,7 @@ contract Piggyvest is Ownable{
 
     ///@dev deposite ERC20 tokens into this contract
     function depositeERC20Tokens(uint32 amountTokens) public {
-        bool sent = token.transferFrom(msg.sender, address(this), amountTokens);
+        bool sent = token_A.transferFrom(msg.sender, address(this), amountTokens);
         require(sent,'error while transfering token');
         UserTokens[msg.sender] += amountTokens;
         emit TransferTokenIn(msg.sender, amountTokens);  
