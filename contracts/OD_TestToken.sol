@@ -7,6 +7,6 @@ contract OD_testToken is ERC20 {
     address owner;
     constructor() ERC20("TestToken", "TT") {
         owner = msg.sender;
-        _mint(owner, 10000000000000000000000000);
+        _mint(owner, 1000000000000000000000000000);
     }
 }

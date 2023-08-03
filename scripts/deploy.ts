@@ -3,16 +3,33 @@ import { ethers } from "hardhat";
 
 async function main() {
 
-  const Testtoken = await ethers.deployContract("TestToken");
+  const OD_testToken = await ethers.deployContract("OD_testToken");
 
   console.log('deploying')
 
-  await Testtoken.waitForDeployment();
+  await OD_testToken.waitForDeployment();
 
-  console.log('deployed', await Testtoken.getAddress());
-  //////////////////////////////////////////////////
+  console.log('deployed', await OD_testToken.getAddress());
 
-  const Piggyvest = await ethers.deployContract("Piggyvest", [ await Testtoken.getAddress()]);
+  //////token USD
+
+  const ODUSD = await ethers.deployContract("ODUSD");
+
+  console.log('deploying')
+
+  await ODUSD.waitForDeployment();
+
+  console.log('deployed', await ODUSD.getAddress());
+
+
+  ////////////////////////piggvest//////////////////////////
+
+  const amount = ethers.parseUnits("20", 18);
+
+  let router = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+  await OD_testToken.approve(router, amount)
+  await ODUSD.approve(router, amount)
+  const Piggyvest = await ethers.deployContract("Piggyvest", [ await ODUSD.getAddress(), await OD_testToken.getAddress()]);
 
   console.log('deploying')
 

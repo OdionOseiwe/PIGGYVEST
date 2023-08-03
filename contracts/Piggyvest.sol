@@ -3,9 +3,6 @@ pragma solidity ^0.8.19;
 
 import {IERC20} from  "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IUniswapV2Factory} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
-import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-
 
 contract Piggyvest is Ownable{
     IERC20 public  token_A;
@@ -13,7 +10,9 @@ contract Piggyvest is Ownable{
 
     uint32 public timeLock;
 
-    address public router;
+    address router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+
+    uint256 deadline = block.timestamp + 1 minutes;
 
     mapping(address => uint32) UserTokens;
 
@@ -25,12 +24,12 @@ contract Piggyvest is Ownable{
 
     event withdrawal(address user, uint32 amount);
     
-    constructor( IERC20 _tokenA, IERC20 _tokenB, uint256 _tokenAamount, uint256 _tokenBamount){
+    constructor( IERC20 _tokenA, IERC20 _tokenB){
         require(address(_tokenA) !=  address(0) , "Invalid address");
         require( address(_tokenB) !=  address(0), "invalid address");
         token_A = _tokenA;
         token_B = _tokenB;
-        IUniswapV2Router02(router).addLiquidity(address(_tokenA),address(_tokenB),_tokenAamount,_tokenBamount, 0, 0, owner(), 10);
+        // router = _router;
     }
 
     modifier TimeLock() {
@@ -61,14 +60,12 @@ contract Piggyvest is Ownable{
 
     ///@dev withdraw tokens
     function withdrawToken () public TimeLock(){
-        address  token_A; 
-        address  token_B;
         uint32 tokens = UserTokens[msg.sender];
         require(tokens > 0, "Did not deposit");
         address[] memory path = new address [](2);
-        path[0] = token_A;
-        path[1] = token_B;
-        IUniswapV2Router02(router).swapExactTokensForTokens(tokens,(tokens - 1 ** 18),path, msg.sender, (block.timestamp + 60));
+        path[0] = address( token_A);
+        path[1] = address( token_B);
+        IRouter(router).swapExactTokensForTokens(tokens,(tokens - 1 ** 18),path, msg.sender, deadline);
         UserTokens[msg.sender] = 0;
         emit withdrawal(msg.sender,tokens );
     }
@@ -84,4 +81,15 @@ contract Piggyvest is Ownable{
     }
 
 
+}
+
+
+interface IRouter{
+    function swapExactTokensForTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
 }

@@ -1,5 +1,6 @@
 import {time,loadFixture,} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
+const IUniswapV2Router02 = require('@uniswap/v2-periphery/build/IUniswapV2Router02.json')
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { log } from "console";
@@ -18,25 +19,39 @@ describe("Piggyvest", function () {
     const OD_testToken = await ethers.getContractFactory("OD_testToken");
     const od_testToken = await OD_testToken.deploy();
 
-
     const ODUSD = await ethers.getContractFactory("ODUSD");
     const odUSD = await ODUSD.deploy();
 
-    const amount = ethers.parseUnits("20", 18);
+    const uRouter = new ethers.Contract('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', IUniswapV2Router02.abi, owner);
 
     const Piggyvest = await ethers.getContractFactory("Piggyvest");
-    const piggyvest = await Piggyvest.deploy(await od_testToken.getAddress(), await odUSD.getAddress(),amount, amount);
+    const piggyvest = await Piggyvest.deploy(await od_testToken.getAddress(), await odUSD.getAddress());
 
-    return { piggyvest, owner, otherAccount, odUSD, od_testToken, unlockTime};
+    const Create_pool = await ethers.getContractFactory("Pool");
+    const create_pool = await Create_pool.deploy();
+
+    return { piggyvest, owner, otherAccount, odUSD, od_testToken, unlockTime, create_pool, uRouter};
     
   }
 
   describe("Deployment", function () {
 
-    it("Should deploy Piggyvest and set timelock", async function () {
-      const { piggyvest, owner, unlockTime } = await loadFixture(deployPiggyvest);
-      owner.call( await piggyvest.changeTimeLock(unlockTime));      
-    });
+    it("create a pool and liquidity", async function () {
+
+      const { owner, create_pool, odUSD, od_testToken, uRouter } = await loadFixture(deployPiggyvest);
+      const amount =  ethers.parseUnits("50","ether");
+      const amount2 =  ethers.parseUnits("60","ether");
+
+      owner.call( await od_testToken.approve(await uRouter.getAddress(), amount))
+      owner.call(await odUSD.approve(await uRouter.getAddress(), amount2))
+      owner.call( await create_pool.createPool(await od_testToken.getAddress(), await odUSD.getAddress(), owner )  ) 
+   
+    })
+
+    // it("Should deploy Piggyvest and set timelock", async function () {
+    //   const { piggyvest, owner, unlockTime } = await loadFixture(deployPiggyvest);
+    //   owner.call( await piggyvest.changeTimeLock(unlockTime));      
+    // });
 
     // it("Should revert when called with another address ", async function () {
     //   const { piggyvest, unlockTime, otherAccount } = await loadFixture(deployPiggyvest);
