@@ -12,7 +12,7 @@ contract Piggyvest is Ownable{
 
     address router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
-    uint256 deadline = block.timestamp + 1 minutes;
+    uint256 deadline = block.timestamp + 2 minutes;
 
     mapping(address => uint32) UserTokens;
 
@@ -29,7 +29,6 @@ contract Piggyvest is Ownable{
         require( address(_tokenB) !=  address(0), "invalid address");
         token_A = _tokenA;
         token_B = _tokenB;
-        // router = _router;
     }
 
     modifier TimeLock() {
