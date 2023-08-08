@@ -12,11 +12,9 @@ contract Piggyvest is Ownable{
 
     address router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
-    uint256 deadline = block.timestamp + 2 minutes;
+    mapping(address => uint32) public userTokens;
 
-    mapping(address => uint32) UserTokens;
-
-    mapping(address => uint256) etherAmount;
+    mapping(address => uint256) public etherAmount;
 
     event TransferTokenIn(address user, uint32 tokenId);
 
@@ -40,7 +38,7 @@ contract Piggyvest is Ownable{
     function depositeERC20Tokens(uint32 amountTokens) public {
         bool sent = token_A.transferFrom(msg.sender, address(this), amountTokens);
         require(sent,'error while transfering token');
-        UserTokens[msg.sender] += amountTokens;
+        userTokens[msg.sender] += amountTokens;
         emit TransferTokenIn(msg.sender, amountTokens);  
     }
 
@@ -59,13 +57,14 @@ contract Piggyvest is Ownable{
 
     ///@dev withdraw tokens
     function withdrawToken () public TimeLock(){
-        uint32 tokens = UserTokens[msg.sender];
+        uint32 tokens = userTokens[msg.sender];
         require(tokens > 0, "Did not deposit");
         address[] memory path = new address [](2);
         path[0] = address( token_A);
         path[1] = address( token_B);
+        uint256 deadline = block.timestamp  + 100000 hours;
         IRouter(router).swapExactTokensForTokens(tokens,(tokens - 1 ** 18),path, msg.sender, deadline);
-        UserTokens[msg.sender] = 0;
+        userTokens[msg.sender] = 0;
         emit withdrawal(msg.sender,tokens );
     }
 
@@ -78,7 +77,6 @@ contract Piggyvest is Ownable{
         require(sent, "failed to send ether Out");
         emit withdrawal(msg.sender, uint32(amount));
     }
-
 
 }
 
