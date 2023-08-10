@@ -27,10 +27,8 @@ async function main() {
   ////////////////////////piggvest//////////////////////////
 
   const amount = ethers.parseUnits("20", 18);
+  const tokensAmount = 100000000
 
-  let router = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
-  await OD_testToken.approve(router, amount)
-  await ODUSD.approve(router, amount)
   const Piggyvest = await ethers.deployContract("Piggyvest",[await OD_testToken.getAddress(),  await ODUSD.getAddress()]);
 
   console.log('deploying')
@@ -56,13 +54,23 @@ async function main() {
 console.log("approving");
 
 
-      await OD_testToken.approve(uRouter, 10000000);
-      await ODUSD.approve(uRouter, 10000000);
+      await OD_testToken.approve(uRouter, amount);
+      await ODUSD.approve(uRouter, amount);
       console.log("adding liquidity");
 
-      await ROUTER.addLiquidity(await OD_testToken.getAddress(), await ODUSD.getAddress(),10000000, 10000000, 0,0,await owner.getAddress(), deadline)
+      const bal12 =await OD_testToken.balanceOf(owner.address)
+
+      console.log("before adding liquidity for OD_testToken", bal12);
+
+      const bal14 =await ODUSD.balanceOf(owner.address)
+
+      console.log("before adding liquidity for ODUSD", bal14);
+
+      await ROUTER.addLiquidity(await OD_testToken.getAddress(), await ODUSD.getAddress(),amount, amount, 0,0,await owner.getAddress(), deadline)
 
       console.log("finishing adding liquidity");
+
+       ////////checking the balances/////////////////////
 
       const bal1 =await ODUSD.balanceOf(owner.address)
 
@@ -72,14 +80,16 @@ console.log("approving");
 
       console.log("after adding liquidity OD_testToken", bal2);
 
+
       ///////////////depositing tokens/////////////////
 
       console.log("depositing ");
 
-      await OD_testToken.approve(await piggyvest.getAddress(), 10);
+      await OD_testToken.approve(await piggyvest.getAddress(), tokensAmount);
 
-      await piggyvest.depositeERC20Tokens(10);
+      await piggyvest.depositeERC20Tokens(tokensAmount);
 
+      ////////checking the balances/////////////////////
 
       const bal4 =await ODUSD.balanceOf(owner.address)
 
@@ -88,6 +98,10 @@ console.log("approving");
       const bal5 =await OD_testToken.balanceOf(owner.address)
 
       console.log("after depositing into piggyvest OD_testToken", bal5);
+
+      const bal10 =await ODUSD.balanceOf(await piggyvest.getAddress())
+
+      console.log("balance of piggyvest and withdrawing of ODUSD", bal10);
 
       console.log("setting changeTimeLock");
 
@@ -104,12 +118,13 @@ console.log("approving");
       const newCurrentTime = await time.latest()
       console.log(newCurrentTime, "latest time");
       
-
       //////////////withdrawing tokens////////////////////
 
       console.log("withdrawing");
 
       await piggyvest.withdrawToken();
+
+      ////////checking the balances/////////////////////
 
       const bal =await ODUSD.balanceOf(owner.address)
 
@@ -119,13 +134,7 @@ console.log("approving");
 
       console.log("balance of owner and withdrawing of OD_testToken", bal8);
 
-      
-      console.log("finished withdrring");   
-
-// await OD_testToken.approve(uRouter, amountIn);
-
-
-// ROUTER.swapExactTokensForTokens(amountIn, amountOutMin, [await OD_testToken.getAddress(),  await ODUSD.getAddress()], owner.address, deadline);
+      console.log("finished withdrawing");   
 }
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
